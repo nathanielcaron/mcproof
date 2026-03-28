@@ -1,0 +1,122 @@
+import {McpToolResult} from './types';
+
+type AsymmetricMatcher = {
+  asymmetricMatch?: (value: unknown) => boolean;
+};
+
+function safeParseJson(value: string): unknown | undefined {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return undefined;
+  }
+}
+
+function extractSseDataPayload(raw: string): unknown {
+  const payloads = raw
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(line => line.startsWith('data:'))
+    .map(line => line.replace(/^data:\s?/, ''))
+    .filter(line => line.length > 0)
+    .map(line => safeParseJson(line))
+    .filter((value: unknown | undefined): value is unknown => value !== undefined);
+
+  if (payloads.length === 0) {
+    return raw;
+  }
+
+  return payloads[payloads.length - 1];
+}
+
+function normalizeToolOutput(value: unknown): unknown {
+  if (typeof value === 'string') {
+    const ssePayload = extractSseDataPayload(value);
+    if (ssePayload !== value) {
+      return normalizeToolOutput(ssePayload);
+    }
+
+    const parsedJson = safeParseJson(value);
+    if (parsedJson !== undefined) {
+      return normalizeToolOutput(parsedJson);
+    }
+
+    return value;
+  }
+
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+
+  const candidate = value as {
+    result?: unknown;
+    output?: unknown;
+    structuredContent?: unknown;
+    content?: Array<{ type?: unknown; text?: unknown }>;
+  };
+
+  if (candidate.result !== undefined) {
+    return normalizeToolOutput(candidate.result);
+  }
+
+  if (candidate.output !== undefined) {
+    return normalizeToolOutput(candidate.output);
+  }
+
+  if (candidate.structuredContent !== undefined) {
+    return candidate.structuredContent;
+  }
+
+  if (Array.isArray(candidate.content)) {
+    const texts = candidate.content
+      .map(item => (typeof item?.text === 'string' ? item.text : undefined))
+      .filter((text: string | undefined): text is string => text !== undefined);
+
+    if (texts.length === 1) {
+      const parsed = safeParseJson(texts[0]);
+      return parsed !== undefined ? parsed : texts[0];
+    }
+
+    if (texts.length > 1) {
+      return texts.join('\n');
+    }
+
+    return candidate.content;
+  }
+
+  return value;
+}
+
+function isAsymmetricMatcher(value: unknown): value is AsymmetricMatcher {
+  return Boolean(value && typeof value === 'object' && typeof (value as AsymmetricMatcher).asymmetricMatch === 'function');
+}
+
+export function expectToolSuccess(result: McpToolResult): void {
+  if (result.status !== 'success') {
+    throw new Error(`Expected success status but got ${result.status}: ${result.error ?? 'no error info'}`);
+  }
+}
+
+export function expectToolError(result: McpToolResult, expectedMessage?: string): void {
+  if (result.status !== 'error') {
+    throw new Error('Expected tool call to fail with error status');
+  }
+
+  if (expectedMessage && !result.error?.includes(expectedMessage)) {
+    throw new Error(`Expected error message to include '${expectedMessage}', got '${result.error}'`);
+  }
+}
+
+export function expectToolOutput(result: McpToolResult, expected: unknown): void {
+  const normalizedOutput = normalizeToolOutput(result.output);
+
+  if (isAsymmetricMatcher(expected)) {
+    if (!expected.asymmetricMatch?.(normalizedOutput)) {
+      expect(normalizedOutput).toEqual(expected);
+    }
+
+    return;
+  }
+
+  expect(normalizedOutput).toEqual(expected);
+}

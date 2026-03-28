@@ -1,0 +1,49 @@
+{
+  "name": "mcproof",
+  "version": "0.1.0",
+  "description": "A test framework for MCP servers",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "mcproof": "bin/mcproof.js"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && MCPROOF_SKIP_PREFLIGHT=1 node ./bin/mcproof.js test",
+    "lint": "eslint . --ext .ts",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint"
+  },
+  "keywords": [
+    "mcp",
+    "testing",
+    "integration-test",
+    "mcp-server"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.14.2",
+    "@typescript-eslint/eslint-plugin": "^8.57.2",
+    "@typescript-eslint/parser": "^8.57.2",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-jest": "^29.15.1",
+    "prettier": "^3.1.4"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.28.0",
+    "@types/jest": "^29.5.3",
+    "dotenv": "^16.6.1",
+    "jest": "^29.6.4",
+    "ts-jest": "^29.4.6",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
