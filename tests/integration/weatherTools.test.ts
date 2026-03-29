@@ -1,4 +1,4 @@
-import {expectToolOutput, expectToolSuccess, getSharedMcpTestClient} from '../../src';
+import {expectTool, expectToolCallContent, expectToolCallMeta, expectToolCallSuccess, getSharedMcpTestClient} from '../../src';
 import {startMockMcpServer, stopMockMcpServer} from './mockServer';
 
 beforeAll(async () => {
@@ -12,6 +12,8 @@ afterAll(async () => {
 test('weather tools use the shared MCP client without local setup', async () => {
   const client = getSharedMcpTestClient();
 
+  await expectTool(client, 'weather.current');
+
   expect(client.getAuthHeaders()).toEqual({ Authorization: 'Bearer suite-token' });
 
   const result = await client.invokeTool({
@@ -20,6 +22,7 @@ test('weather tools use the shared MCP client without local setup', async () => 
     requestId: 'weather-1',
   });
 
-  expectToolSuccess(result);
-  expectToolOutput(result, { city: 'Montreal', forecast: 'sunny' });
+  expectToolCallSuccess(result);
+  expectToolCallContent(result, { city: 'Montreal', forecast: 'sunny' });
+  expectToolCallMeta(result, { source: 'mock-server', tool: 'weather.current' });
 });

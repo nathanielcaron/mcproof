@@ -29,6 +29,32 @@ export interface McpProtocolValidationResult {
   message?: string;
 }
 
+export interface McpServerInfo {
+  name?: string;
+  version?: string;
+}
+
+export interface McpToolDescriptor {
+  name: string;
+  title?: string;
+  description?: string;
+}
+
+export interface McpResourceDescriptor {
+  name: string;
+  uri: string;
+  mimeType?: string;
+  title?: string;
+  description?: string;
+}
+
+export interface McpPromptDescriptor {
+  name: string;
+  title?: string;
+  description?: string;
+  argumentCount: number;
+}
+
 export type McpSharedClientConfig = McpTestClientOptions;
 
 export interface McpEnvConfigOptions {

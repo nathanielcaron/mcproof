@@ -128,6 +128,10 @@ export async function startMockMcpServer(): Promise<void> {
               result: {
                 content: [{ type: 'text', text: JSON.stringify(weather) }],
                 structuredContent: weather,
+                _meta: {
+                  source: 'mock-server',
+                  tool: 'weather.current',
+                },
                 isError: false,
               },
             }),
@@ -156,6 +160,10 @@ export async function startMockMcpServer(): Promise<void> {
               result: {
                 content: [{ type: 'text', text: JSON.stringify(time) }],
                 structuredContent: time,
+                _meta: {
+                  source: 'mock-server',
+                  tool: 'time.current',
+                },
                 isError: false,
               },
             }),

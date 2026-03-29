@@ -46,6 +46,8 @@ These APIs remain available for advanced integrations, but they are no longer re
 
 - `validateMcpToolCall(call): McpProtocolValidationResult`
 - `validateMcpToolResult(result): McpProtocolValidationResult`
-- `expectToolSuccess(result): void`
-- `expectToolError(result, expectedMessage?): void`
-- `expectToolOutput(result, expected): void`
+- `expectTool(client, toolName): Promise<void>`
+- `expectToolCallSuccess(result): void`
+- `expectToolCallError(result, expectedMessage?): void`
+- `expectToolCallContent(result, expected): void`
+- `expectToolCallMeta(result, expected?): void`

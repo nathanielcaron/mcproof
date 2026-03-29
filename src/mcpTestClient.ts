@@ -1,6 +1,15 @@
 import {Client} from '@modelcontextprotocol/sdk/client';
 import {StreamableHTTPClientTransport, StreamableHTTPError} from '@modelcontextprotocol/sdk/client/streamableHttp.js';
-import {McpTestClientOptions, McpToolCall, McpToolResult} from './types';
+import {version as packageVersion} from '../package.json';
+import {
+  McpPromptDescriptor,
+  McpResourceDescriptor,
+  McpServerInfo,
+  McpTestClientOptions,
+  McpToolCall,
+  McpToolDescriptor,
+  McpToolResult,
+} from './types';
 
 const NETWORK_ERROR_CODES = new Set([
   'ECONNREFUSED',
@@ -207,7 +216,7 @@ export class McpTestClient {
       const client = new Client(
         {
           name: 'mcproof',
-          version: '0.1.0',
+          version: packageVersion,
         },
         {
           capabilities: {},
@@ -258,7 +267,17 @@ export class McpTestClient {
     void this.resetConnection();
   }
 
-  async listAvailableTools(): Promise<string[]> {
+  async getServerInfo(): Promise<McpServerInfo> {
+    await this.ensureConnected();
+    const serverInfo = this.client?.getServerVersion();
+
+    return {
+      name: serverInfo?.name,
+      version: serverInfo?.version,
+    };
+  }
+
+  async listTools(): Promise<McpToolDescriptor[]> {
     for (let attempt = 0; attempt < 2; attempt += 1) {
       await this.ensureConnected();
 
@@ -267,7 +286,11 @@ export class McpTestClient {
           timeout: this.timeoutMs,
         });
 
-        return response.tools.map((tool: { name: string }) => tool.name);
+        return response.tools.map(tool => ({
+          name: tool.name,
+          title: tool.title,
+          description: tool.description,
+        }));
       } catch (error: unknown) {
         if (attempt === 0 && this.isConnectionFailure(error)) {
           await this.resetConnection();
@@ -275,6 +298,68 @@ export class McpTestClient {
         }
 
         this.normalizeMcpError(error);
+      }
+    }
+
+    return [];
+  }
+
+  async listAvailableTools(): Promise<string[]> {
+    const tools = await this.listTools();
+    return tools.map(tool => tool.name);
+  }
+
+  async listResources(): Promise<McpResourceDescriptor[]> {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      await this.ensureConnected();
+
+      try {
+        const response = await this.client!.listResources(undefined, {
+          timeout: this.timeoutMs,
+        });
+
+        return response.resources.map(resource => ({
+          name: resource.name,
+          uri: resource.uri,
+          mimeType: resource.mimeType,
+          title: resource.title,
+          description: resource.description,
+        }));
+      } catch (error: unknown) {
+        if (attempt === 0 && this.isConnectionFailure(error)) {
+          await this.resetConnection();
+          continue;
+        }
+
+        return [];
+      }
+    }
+
+    return [];
+  }
+
+  async listPrompts(): Promise<McpPromptDescriptor[]> {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      await this.ensureConnected();
+
+      try {
+        const response = await this.client!.listPrompts(undefined, {
+          timeout: this.timeoutMs,
+        });
+
+        return response.prompts.map(prompt => ({
+          name: prompt.name,
+          title: prompt.title,
+          description: prompt.description,
+          argumentCount: prompt.arguments?.length ?? 0,
+        }));
+      } catch (error: unknown) {
+        if (attempt === 0 && this.isConnectionFailure(error)) {
+          await this.resetConnection();
+          continue;
+        }
+
+        return [];
       }
     }
 

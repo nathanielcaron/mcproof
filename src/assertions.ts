@@ -4,6 +4,10 @@ type AsymmetricMatcher = {
   asymmetricMatch?: (value: unknown) => boolean;
 };
 
+type ToolLookupClient = {
+  listAvailableTools: () => Promise<string[]>;
+};
+
 function safeParseJson(value: string): unknown | undefined {
   try {
     return JSON.parse(value);
@@ -91,13 +95,49 @@ function isAsymmetricMatcher(value: unknown): value is AsymmetricMatcher {
   return Boolean(value && typeof value === 'object' && typeof (value as AsymmetricMatcher).asymmetricMatch === 'function');
 }
 
-export function expectToolSuccess(result: McpToolResult): void {
+function extractToolMeta(value: unknown): unknown {
+  if (!value || typeof value !== 'object') {
+    return undefined;
+  }
+
+  const candidate = value as {
+    _meta?: unknown;
+    result?: unknown;
+    output?: unknown;
+  };
+
+  if (candidate._meta !== undefined) {
+    return candidate._meta;
+  }
+
+  if (candidate.result !== undefined) {
+    return extractToolMeta(candidate.result);
+  }
+
+  if (candidate.output !== undefined) {
+    return extractToolMeta(candidate.output);
+  }
+
+  return undefined;
+}
+
+export async function expectTool(client: ToolLookupClient, toolName: string): Promise<void> {
+  const availableTools = await client.listAvailableTools();
+  if (availableTools.includes(toolName)) {
+    return;
+  }
+
+  const discovered = availableTools.length > 0 ? availableTools.join(', ') : '(none)';
+  throw new Error(`Expected MCP server to expose tool '${toolName}', but discovered: ${discovered}`);
+}
+
+export function expectToolCallSuccess(result: McpToolResult): void {
   if (result.status !== 'success') {
     throw new Error(`Expected success status but got ${result.status}: ${result.error ?? 'no error info'}`);
   }
 }
 
-export function expectToolError(result: McpToolResult, expectedMessage?: string): void {
+export function expectToolCallError(result: McpToolResult, expectedMessage?: string): void {
   if (result.status !== 'error') {
     throw new Error('Expected tool call to fail with error status');
   }
@@ -107,7 +147,7 @@ export function expectToolError(result: McpToolResult, expectedMessage?: string)
   }
 }
 
-export function expectToolOutput(result: McpToolResult, expected: unknown): void {
+export function expectToolCallContent(result: McpToolResult, expected: unknown): void {
   const normalizedOutput = normalizeToolOutput(result.output);
 
   if (isAsymmetricMatcher(expected)) {
@@ -119,4 +159,18 @@ export function expectToolOutput(result: McpToolResult, expected: unknown): void
   }
 
   expect(normalizedOutput).toEqual(expected);
+}
+
+export function expectToolCallMeta(result: McpToolResult, expected?: unknown): void {
+  const meta = extractToolMeta(result.output);
+
+  if (expected === undefined) {
+    if (meta === undefined) {
+      throw new Error('Expected tool call result output to contain a _meta field');
+    }
+
+    return;
+  }
+
+  expect(meta).toEqual(expected);
 }

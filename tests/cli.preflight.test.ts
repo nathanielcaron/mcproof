@@ -76,6 +76,57 @@ beforeAll(async () => {
         return;
       }
 
+      if (method === 'resources/list' || requestName === 'resources/list' || requestName === 'resources.list') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        if (payload?.jsonrpc === '2.0') {
+          res.end(
+            JSON.stringify({
+              jsonrpc: '2.0',
+              id: requestId,
+              result: {
+                resources: [
+                  {
+                    name: 'forecast-city',
+                    uri: 'resource://weather/forecast/{city}',
+                    mimeType: 'application/json',
+                    description: 'Weather forecast by city',
+                  },
+                ],
+              },
+            }),
+          );
+          return;
+        }
+
+        res.end(JSON.stringify({ status: 'success', output: { resources: [] } }));
+        return;
+      }
+
+      if (method === 'prompts/list' || requestName === 'prompts/list' || requestName === 'prompts.list') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        if (payload?.jsonrpc === '2.0') {
+          res.end(
+            JSON.stringify({
+              jsonrpc: '2.0',
+              id: requestId,
+              result: {
+                prompts: [
+                  {
+                    name: 'weather-summary',
+                    description: 'Summarize weather conditions for a city.',
+                    arguments: [{ name: 'city', required: true }],
+                  },
+                ],
+              },
+            }),
+          );
+          return;
+        }
+
+        res.end(JSON.stringify({ status: 'success', output: { prompts: [] } }));
+        return;
+      }
+
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ status: 'success', output: { ok: true } }));
     });
@@ -124,7 +175,38 @@ test('runCli prints preflight logs before executing tests', async () => {
   }
 
   expect(errors).toEqual([]);
-  expect(logs.some(line => line.includes('Successfully connected to MCP server'))).toBe(true);
-  expect(logs.some(line => line.includes('Available MCP tools: timeTool, weatherTool'))).toBe(true);
+  expect(logs.some(line => line.includes('Initialization complete'))).toBe(true);
+  expect(logs.some(line => line.includes('MCP server: preflight-server v1.0.0'))).toBe(true);
+  expect(logs.some(line => line.includes('[mcproof] Tools'))).toBe(true);
+  expect(logs.some(line => line.includes('timeTool'))).toBe(true);
+  expect(logs.some(line => line.includes('[mcproof] Resources'))).toBe(true);
+  expect(logs.some(line => line.includes('forecast-city'))).toBe(true);
+  expect(logs.some(line => line.includes('[mcproof] Prompts'))).toBe(true);
+  expect(logs.some(line => line.includes('weather-summary'))).toBe(true);
   expect(logs.some(line => line.includes('Executing tests...'))).toBe(true);
+});
+
+test.each([['--version'], ['-v']])('runCli prints package version for %s', async versionFlag => {
+  const logs: string[] = [];
+  const errors: string[] = [];
+  const originalLog = console.log;
+  const originalError = console.error;
+
+  console.log = (message?: unknown): void => {
+    logs.push(String(message));
+  };
+  console.error = (message?: unknown): void => {
+    errors.push(String(message));
+  };
+
+  try {
+    const exitCode = await runCli([versionFlag]);
+    expect(exitCode).toBe(0);
+  } finally {
+    console.log = originalLog;
+    console.error = originalError;
+  }
+
+  expect(errors).toEqual([]);
+  expect(logs).toEqual(['0.2.0']);
 });
