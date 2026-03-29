@@ -28,17 +28,21 @@ afterAll(async () => {
 test('invokeTool surfaces a clear endpoint hint on HTTP 404', async () => {
   const client = new McpTestClient({ baseUrl, timeoutMs: 500 });
 
-  await expect(
-    client.invokeTool({
-      name: 'time.current',
-      input: { timezone: 'UTC' },
-    }),
-  ).rejects.toThrow('MCP server at');
+  try {
+    await expect(
+      client.invokeTool({
+        name: 'time.current',
+        input: { timezone: 'UTC' },
+      }),
+    ).rejects.toThrow('MCP server at');
 
-  await expect(
-    client.invokeTool({
-      name: 'time.current',
-      input: { timezone: 'UTC' },
-    }),
-  ).rejects.toThrow('points to the correct MCP HTTP endpoint path');
+    await expect(
+      client.invokeTool({
+        name: 'time.current',
+        input: { timezone: 'UTC' },
+      }),
+    ).rejects.toThrow('points to the correct MCP HTTP endpoint path');
+  } finally {
+    await client.disconnect();
+  }
 });

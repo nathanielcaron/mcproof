@@ -8,6 +8,10 @@ type ToolLookupClient = {
   listAvailableTools: () => Promise<string[]>;
 };
 
+type PromiseLikeToolResult = {
+  then: (onfulfilled?: (value: McpToolResult) => unknown, onrejected?: (reason: unknown) => unknown) => unknown;
+};
+
 function safeParseJson(value: string): unknown | undefined {
   try {
     return JSON.parse(value);
@@ -121,6 +125,24 @@ function extractToolMeta(value: unknown): unknown {
   return undefined;
 }
 
+function isPromiseLikeToolResult(value: unknown): value is PromiseLikeToolResult {
+  return Boolean(value && typeof value === 'object' && typeof (value as PromiseLikeToolResult).then === 'function');
+}
+
+function formatUnknownErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function assertToolCallErrored(result: McpToolResult, expectedMessage?: string): void {
+  if (result.status !== 'error') {
+    throw new Error('Expected tool call to fail with error status');
+  }
+
+  if (expectedMessage && !result.error?.includes(expectedMessage)) {
+    throw new Error(`Expected error message to include '${expectedMessage}', got '${result.error}'`);
+  }
+}
+
 export async function expectTool(client: ToolLookupClient, toolName: string): Promise<void> {
   const availableTools = await client.listAvailableTools();
   if (availableTools.includes(toolName)) {
@@ -137,14 +159,28 @@ export function expectToolCallSuccess(result: McpToolResult): void {
   }
 }
 
-export function expectToolCallError(result: McpToolResult, expectedMessage?: string): void {
-  if (result.status !== 'error') {
-    throw new Error('Expected tool call to fail with error status');
+export function expectToolCallError(result: McpToolResult, expectedMessage?: string): void;
+export function expectToolCallError(result: Promise<McpToolResult>, expectedMessage?: string): Promise<void>;
+export function expectToolCallError(result: McpToolResult | Promise<McpToolResult>, expectedMessage?: string): void | Promise<void> {
+  if (isPromiseLikeToolResult(result)) {
+    return Promise.resolve(result).then(
+      toolResult => {
+        assertToolCallErrored(toolResult, expectedMessage);
+      },
+      (error: unknown) => {
+        if (!expectedMessage) {
+          return;
+        }
+
+        const message = formatUnknownErrorMessage(error);
+        if (!message.includes(expectedMessage)) {
+          throw new Error(`Expected invocation failure message to include '${expectedMessage}', got '${message}'`);
+        }
+      },
+    );
   }
 
-  if (expectedMessage && !result.error?.includes(expectedMessage)) {
-    throw new Error(`Expected error message to include '${expectedMessage}', got '${result.error}'`);
-  }
+  assertToolCallErrored(result, expectedMessage);
 }
 
 export function expectToolCallContent(result: McpToolResult, expected: unknown): void {

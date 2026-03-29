@@ -2,8 +2,7 @@ import {
   configureSharedMcpTestClient,
   disconnectSharedMcpTestClient,
   expectTool,
-  expectToolCallContent,
-  expectToolCallMeta,
+  expectToolCallError,
   expectToolCallSuccess,
   getSharedMcpTestClient,
   initializeSharedMcpTestClient,
@@ -29,20 +28,19 @@ afterAll(async () => {
   await stopMockMcpServer();
 });
 
-test('weather tools use the shared MCP client without local setup', async () => {
+test('missing tool fails both discovery and invocation checks', async () => {
   const client = getSharedMcpTestClient();
 
-  await expectTool(client, 'weather.current');
-
-  expect(client.getAuthHeaders()).toEqual({ Authorization: 'Bearer suite-token' });
+  await expect(expectTool(client, 'weather.forecast')).rejects.toThrow(
+    "Expected MCP server to expose tool 'weather.forecast'",
+  );
 
   const result = await client.invokeTool({
-    name: 'weather.current',
-    input: { city: 'Montreal' },
-    requestId: 'weather-1',
+    name: 'weather.forecast',
+    input: {city: 'Montreal'},
+    requestId: 'missing-tool-1',
   });
 
-  expectToolCallSuccess(result);
-  expectToolCallContent(result, { city: 'Montreal', forecast: 'sunny' });
-  expectToolCallMeta(result, { source: 'mock-server', tool: 'weather.current' });
+  expect(() => expectToolCallSuccess(result)).toThrow('Expected success status but got error');
+  expectToolCallError(result);
 });

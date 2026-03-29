@@ -60,7 +60,14 @@ Run the suite with the framework CLI:
 npx mcproof test
 ```
 
+e.g.,
+![MCProof Logging Screenshot](resources/images/MCProof_Logging_Screenshot.png)
+
 Each CLI test run also writes a simple HTML report under `mcproof-reports/` in your current working directory.
+
+e.g.,
+![MCProof Report Screenshot 1](resources/images/MCProof_Report_Screenshot_1.png)
+![MCProof Report Screenshot 2](resources/images/MCProof_Report_Screenshot_2.png)
 
 Show the installed package version:
 
@@ -118,7 +125,7 @@ console.log('result output', result.output);
 - `validateMcpToolResult(result)` - returns `McpProtocolValidationResult`
 - `expectTool(client, toolName)`
 - `expectToolCallSuccess(result)`
-- `expectToolCallError(result)`
+- `expectToolCallError(resultOrInvocation[, expectedMessage])`
 - `expectToolCallContent(result, expected)`
 - `expectToolCallMeta(result, expected?)`
 

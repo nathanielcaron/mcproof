@@ -155,18 +155,29 @@ describe('CLI HTML reporting', () => {
 
       expect(exitCode).toBe(0);
       expect(spawnSyncMock).toHaveBeenCalledTimes(1);
-      expect(logs.some(line => line.includes('HTML report:'))).toBe(true);
+      expect(spawnSyncMock.mock.calls[0][1]).toEqual(expect.arrayContaining(['--forceExit']));
+      expect(logs.some(line => line.includes('Report:'))).toBe(true);
 
       const html = readGeneratedReport(tempDir);
-      expect(html).toContain('MCProof HTML Report');
+      expect(html).toContain('MCProof Report 🛡️');
+      expect(html).toContain('Overall status</dt><dd><span class="status-badge status-success">success</span>');
       expect(html).toContain('preflight-server');
       expect(html).toContain('http://127.0.0.1:36719');
       expect(html).toContain('weather.current');
       expect(html).toContain('forecast-city');
       expect(html).toContain('weather-summary');
+      expect(html).toContain('Server Information');
+      expect(html).toContain('Status</dt><dd><span class="status-badge status-success">success</span>');
+      expect(html).toContain('Test Summary');
+      expect(html).toContain('Detailed Test Results');
       expect(html).toContain('tests/integration/weatherTools.test.ts');
       expect(html).toContain('weather.current returns the expected city');
+      expect(html).not.toContain('Exit code');
       expect(html).toContain('Total tests');
+      expect(html.indexOf('Total suites')).toBeLessThan(html.indexOf('Total tests'));
+      expect(html.indexOf('Passed suites')).toBeLessThan(html.indexOf('Passed tests'));
+      expect(html.indexOf('Failed suites')).toBeLessThan(html.indexOf('Failed tests'));
+      expect(html).toContain('Duration</dt><dd>42 ms</dd>');
     } finally {
       console.log = originalLog;
     }

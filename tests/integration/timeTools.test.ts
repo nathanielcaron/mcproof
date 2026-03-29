@@ -1,11 +1,31 @@
-import {expectTool, expectToolCallContent, expectToolCallMeta, expectToolCallSuccess, getSharedMcpTestClient} from '../../src';
+import {
+  configureSharedMcpTestClient,
+  disconnectSharedMcpTestClient,
+  expectTool,
+  expectToolCallContent,
+  expectToolCallMeta,
+  expectToolCallSuccess,
+  getSharedMcpTestClient,
+  initializeSharedMcpTestClient,
+  resetSharedMcpTestClient,
+} from '../../src';
 import {startMockMcpServer, stopMockMcpServer} from './mockServer';
 
 beforeAll(async () => {
-  await startMockMcpServer();
+  const baseUrl = await startMockMcpServer();
+
+  resetSharedMcpTestClient();
+  configureSharedMcpTestClient({
+    baseUrl,
+    timeoutMs: 5000,
+    headers: {Authorization: 'Bearer suite-token'},
+  });
+  await initializeSharedMcpTestClient();
 });
 
 afterAll(async () => {
+  await disconnectSharedMcpTestClient();
+  resetSharedMcpTestClient();
   await stopMockMcpServer();
 });
 

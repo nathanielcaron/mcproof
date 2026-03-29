@@ -1,10 +1,9 @@
 import {createServer, Server} from 'http';
-
-export const PORT = 36719;
-export const URL = `http://127.0.0.1:${PORT}`;
+import {AddressInfo} from 'net';
 
 interface MockServerState {
   server?: Server;
+  baseUrl?: string;
 }
 
 const MOCK_SERVER_STATE_KEY = Symbol.for('mcproof.mockServerState');
@@ -21,11 +20,11 @@ function getMockServerState(): MockServerState {
   return processWithState[MOCK_SERVER_STATE_KEY] as MockServerState;
 }
 
-export async function startMockMcpServer(): Promise<void> {
+export async function startMockMcpServer(): Promise<string> {
   const state = getMockServerState();
 
-  if (state.server?.listening) {
-    return;
+  if (state.server?.listening && state.baseUrl) {
+    return state.baseUrl;
   }
 
   state.server = createServer((req, res) => {
@@ -181,6 +180,21 @@ export async function startMockMcpServer(): Promise<void> {
         return;
       }
 
+      if (payload.jsonrpc === '2.0' && jsonRpcMethod === 'tools/call') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(
+          JSON.stringify({
+            jsonrpc: '2.0',
+            id: requestId,
+            result: {
+              content: [{ type: 'text', text: 'unknown tool' }],
+              isError: true,
+            },
+          }),
+        );
+        return;
+      }
+
       res.writeHead(400, { 'Content-Type': 'application/json' });
       if (payload.jsonrpc === '2.0') {
         res.end(
@@ -198,12 +212,22 @@ export async function startMockMcpServer(): Promise<void> {
   });
 
   await new Promise<void>((resolve, reject) => {
-    state.server?.on('error', reject);
-    state.server?.listen(PORT, '127.0.0.1', () => {
+    state.server?.once('error', reject);
+    state.server?.listen(0, '127.0.0.1', () => {
+      const address = state.server?.address();
+
+      if (!address || typeof address === 'string') {
+        reject(new Error('Mock MCP server could not resolve a listening address.'));
+        return;
+      }
+
+      state.baseUrl = `http://127.0.0.1:${(address as AddressInfo).port}`;
       state.server?.unref();
       resolve();
     });
   });
+
+  return state.baseUrl;
 }
 
 export async function stopMockMcpServer(): Promise<void> {
@@ -215,6 +239,7 @@ export async function stopMockMcpServer(): Promise<void> {
 
   const activeServer = state.server;
   state.server = undefined;
+  state.baseUrl = undefined;
 
   await new Promise<void>((resolve, reject) => {
     activeServer.close(error => {

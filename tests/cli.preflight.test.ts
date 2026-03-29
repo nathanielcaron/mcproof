@@ -175,7 +175,6 @@ test('runCli prints preflight logs before executing tests', async () => {
   }
 
   expect(errors).toEqual([]);
-  expect(logs.some(line => line.includes('Initialization complete'))).toBe(true);
   expect(logs.some(line => line.includes('MCP server: preflight-server v1.0.0'))).toBe(true);
   expect(logs.some(line => line.includes('[mcproof] Tools'))).toBe(true);
   expect(logs.some(line => line.includes('timeTool'))).toBe(true);

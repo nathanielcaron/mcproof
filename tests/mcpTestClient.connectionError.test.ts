@@ -6,10 +6,14 @@ test('invokeTool surfaces a clear connection error when MCP server is unreachabl
     timeoutMs: 200,
   });
 
-  await expect(
-    client.invokeTool({
-      name: 'time.current',
-      input: { timezone: 'UTC' },
-    }),
-  ).rejects.toThrow('Could not connect to MCP server at');
+  try {
+    await expect(
+      client.invokeTool({
+        name: 'time.current',
+        input: { timezone: 'UTC' },
+      }),
+    ).rejects.toThrow('Could not connect to MCP server at');
+  } finally {
+    await client.disconnect();
+  }
 });

@@ -137,6 +137,12 @@ function parseJestSuiteDuration(suite: JestJsonSuiteResult): number | undefined 
     return suite.perfStats.end - suite.perfStats.start;
   }
 
+  const assertionDuration = (suite.assertionResults ?? []).reduce((total, assertion) => total + (assertion.duration ?? 0), 0);
+
+  if (assertionDuration > 0) {
+    return assertionDuration;
+  }
+
   return undefined;
 }
 
@@ -221,7 +227,7 @@ function determineOverallStatus(preflight: McproofReportPreflight, tests: Mcproo
 function writeRunReport(report: McproofHtmlReport): void {
   try {
     const reportPath = writeHtmlReport(report);
-    console.log(`[mcproof] HTML report: ${reportPath}`);
+    console.log(`[mcproof] Report: ${reportPath}`);
   } catch (error: unknown) {
     console.error(`[mcproof] Failed to write HTML report: ${formatErrorMessage(error, 'unknown error')}`);
   }
@@ -239,11 +245,15 @@ function runTestCommand(args: string[]): McproofReportTests {
   const jestBin = resolveJestBin();
   const presetPath = path.resolve(__dirname, 'jestPreset.js');
   const jestOutput = createJestOutputPath();
-  const result = spawnSync(process.execPath, [jestBin, '--config', presetPath, ...args, '--json', '--outputFile', jestOutput.filePath], {
+  const result = spawnSync(
+    process.execPath,
+    [jestBin, '--config', presetPath, '--runInBand', '--forceExit', ...args, '--json', '--outputFile', jestOutput.filePath],
+    {
     cwd: process.cwd(),
     env: process.env,
     stdio: 'inherit',
-  });
+    },
+  );
 
   const testResults = readJestResults(jestOutput.filePath, result.status ?? 1, result.error?.message);
 
@@ -302,7 +312,6 @@ async function runPreflight(): Promise<PreflightExecutionResult> {
     const prompts = await client.listPrompts();
 
     console.log('\n[mcproof]      MCProof 🛡️      \n');
-    console.log('[mcproof] Initialization complete.');
     console.log(`[mcproof] MCP endpoint: ${config.baseUrl}`);
     console.log(`[mcproof] MCP server: ${serverInfo.name ?? 'unknown'} v${serverInfo.version ?? 'unknown'}`);
     renderTable('Tools', ['Name', 'Title', 'Description'], toolRows(tools));

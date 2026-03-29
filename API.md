@@ -49,5 +49,6 @@ These APIs remain available for advanced integrations, but they are no longer re
 - `expectTool(client, toolName): Promise<void>`
 - `expectToolCallSuccess(result): void`
 - `expectToolCallError(result, expectedMessage?): void`
+- `expectToolCallError(invocationPromise, expectedMessage?): Promise<void>`
 - `expectToolCallContent(result, expected): void`
 - `expectToolCallMeta(result, expected?): void`
