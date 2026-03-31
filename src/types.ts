@@ -22,6 +22,39 @@ export interface McpToolResult {
   debug?: Record<string, unknown>;
 }
 
+export interface McpResourceRead {
+  uri: string;
+  requestId?: string;
+  timeoutMs?: number;
+}
+
+export interface McpResourceResult {
+  status: 'success' | 'error';
+  output?: unknown;
+  error?: string;
+  requestId?: string;
+  durationMs?: number;
+  code?: number;
+  debug?: Record<string, unknown>;
+}
+
+export interface McpPromptGet {
+  name: string;
+  arguments?: Record<string, string>;
+  requestId?: string;
+  timeoutMs?: number;
+}
+
+export interface McpPromptResult {
+  status: 'success' | 'error';
+  output?: unknown;
+  error?: string;
+  requestId?: string;
+  durationMs?: number;
+  code?: number;
+  debug?: Record<string, unknown>;
+}
+
 export interface McpProtocolValidationResult {
   isValid: boolean;
   missing?: string[];

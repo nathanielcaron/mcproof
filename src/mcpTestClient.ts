@@ -2,8 +2,12 @@ import {Client} from '@modelcontextprotocol/sdk/client';
 import {StreamableHTTPClientTransport, StreamableHTTPError} from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import {version as packageVersion} from '../package.json';
 import {
+  McpPromptGet,
   McpPromptDescriptor,
+  McpPromptResult,
+  McpResourceRead,
   McpResourceDescriptor,
+  McpResourceResult,
   McpServerInfo,
   McpTestClientOptions,
   McpToolCall,
@@ -390,6 +394,56 @@ export class McpTestClient {
     return 'MCP tools/call failed';
   }
 
+  private extractResourceErrorMessage(output: unknown): string {
+    if (output instanceof Error) {
+      return output.message;
+    }
+
+    if (typeof output === 'string' && output.length > 0) {
+      return output;
+    }
+
+    if (!output || typeof output !== 'object') {
+      return 'MCP resources/read failed';
+    }
+
+    const candidate = output as { message?: unknown; error?: unknown };
+    if (typeof candidate.message === 'string' && candidate.message.length > 0) {
+      return candidate.message;
+    }
+
+    if (typeof candidate.error === 'string' && candidate.error.length > 0) {
+      return candidate.error;
+    }
+
+    return 'MCP resources/read failed';
+  }
+
+  private extractPromptErrorMessage(output: unknown): string {
+    if (output instanceof Error) {
+      return output.message;
+    }
+
+    if (typeof output === 'string' && output.length > 0) {
+      return output;
+    }
+
+    if (!output || typeof output !== 'object') {
+      return 'MCP prompts/get failed';
+    }
+
+    const candidate = output as { message?: unknown; error?: unknown };
+    if (typeof candidate.message === 'string' && candidate.message.length > 0) {
+      return candidate.message;
+    }
+
+    if (typeof candidate.error === 'string' && candidate.error.length > 0) {
+      return candidate.error;
+    }
+
+    return 'MCP prompts/get failed';
+  }
+
   async invokeTool(toolCall: McpToolCall, config?: InvokeToolConfig): Promise<McpToolResult> {
     const startedAt = Date.now();
     const requestId = this.makeRequestId(toolCall.requestId);
@@ -438,6 +492,109 @@ export class McpTestClient {
     return {
       status: 'error',
       error: 'MCP tools/call failed',
+      requestId,
+      durationMs: Date.now() - startedAt,
+    };
+  }
+
+  async readResource(resourceRead: McpResourceRead, config?: InvokeToolConfig): Promise<McpResourceResult> {
+    const startedAt = Date.now();
+    const requestId = this.makeRequestId(resourceRead.requestId);
+
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      await this.ensureConnected();
+
+      try {
+        const response = await this.client!.readResource(
+          {
+            uri: resourceRead.uri,
+          },
+          {
+            timeout: resourceRead.timeoutMs ?? config?.timeout ?? this.timeoutMs,
+          },
+        );
+
+        return {
+          status: 'success',
+          output: response,
+          requestId,
+          durationMs: Date.now() - startedAt,
+        };
+      } catch (error: unknown) {
+        if (attempt === 0 && this.isConnectionFailure(error)) {
+          await this.resetConnection();
+          continue;
+        }
+
+        if (error instanceof StreamableHTTPError && typeof error.code === 'number' && error.code >= 400 && error.code < 500) {
+          return {
+            status: 'error',
+            error: this.extractResourceErrorMessage(error.message),
+            requestId,
+            durationMs: Date.now() - startedAt,
+            code: error.code,
+          };
+        }
+
+        this.normalizeMcpError(error);
+      }
+    }
+
+    return {
+      status: 'error',
+      error: 'MCP resources/read failed',
+      requestId,
+      durationMs: Date.now() - startedAt,
+    };
+  }
+
+  async getPrompt(promptGet: McpPromptGet, config?: InvokeToolConfig): Promise<McpPromptResult> {
+    const startedAt = Date.now();
+    const requestId = this.makeRequestId(promptGet.requestId);
+
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      await this.ensureConnected();
+
+      try {
+        const response = await this.client!.getPrompt(
+          {
+            name: promptGet.name,
+            arguments: promptGet.arguments,
+          },
+          {
+            timeout: promptGet.timeoutMs ?? config?.timeout ?? this.timeoutMs,
+          },
+        );
+
+        return {
+          status: 'success',
+          output: response,
+          requestId,
+          durationMs: Date.now() - startedAt,
+        };
+      } catch (error: unknown) {
+        if (attempt === 0 && this.isConnectionFailure(error)) {
+          await this.resetConnection();
+          continue;
+        }
+
+        if (error instanceof StreamableHTTPError && typeof error.code === 'number' && error.code >= 400 && error.code < 500) {
+          return {
+            status: 'error',
+            error: this.extractPromptErrorMessage(error.message),
+            requestId,
+            durationMs: Date.now() - startedAt,
+            code: error.code,
+          };
+        }
+
+        this.normalizeMcpError(error);
+      }
+    }
+
+    return {
+      status: 'error',
+      error: 'MCP prompts/get failed',
       requestId,
       durationMs: Date.now() - startedAt,
     };

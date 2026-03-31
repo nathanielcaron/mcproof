@@ -155,7 +155,6 @@ describe('CLI HTML reporting', () => {
 
       expect(exitCode).toBe(0);
       expect(spawnSyncMock).toHaveBeenCalledTimes(1);
-      expect(spawnSyncMock.mock.calls[0][1]).toEqual(expect.arrayContaining(['--forceExit']));
       expect(logs.some(line => line.includes('Report:'))).toBe(true);
 
       const html = readGeneratedReport(tempDir);

@@ -227,7 +227,7 @@ function determineOverallStatus(preflight: McproofReportPreflight, tests: Mcproo
 function writeRunReport(report: McproofHtmlReport): void {
   try {
     const reportPath = writeHtmlReport(report);
-    console.log(`[mcproof] Report: ${reportPath}`);
+    console.log(`\n[mcproof] Report: ${reportPath}\n`);
   } catch (error: unknown) {
     console.error(`[mcproof] Failed to write HTML report: ${formatErrorMessage(error, 'unknown error')}`);
   }
@@ -247,7 +247,7 @@ function runTestCommand(args: string[]): McproofReportTests {
   const jestOutput = createJestOutputPath();
   const result = spawnSync(
     process.execPath,
-    [jestBin, '--config', presetPath, '--runInBand', '--forceExit', ...args, '--json', '--outputFile', jestOutput.filePath],
+    [jestBin, '--config', presetPath, '--runInBand', ...args, '--json', '--outputFile', jestOutput.filePath],
     {
     cwd: process.cwd(),
     env: process.env,

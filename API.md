@@ -29,7 +29,12 @@ Supported env variables:
 - `getAuthHeaders(): Record<string,string>`
 - `setAuthHeaders(auth: Record<string,string>): void`
 - `clearAuthHeaders(): void`
+- `listTools(): Promise<McpToolDescriptor[]>`
+- `listResources(): Promise<McpResourceDescriptor[]>`
+- `listPrompts(): Promise<McpPromptDescriptor[]>`
 - `invokeTool(toolCall: McpToolCall, config?: { timeout?: number }): Promise<McpToolResult>`
+- `readResource(resourceRead: McpResourceRead, config?: { timeout?: number }): Promise<McpResourceResult>`
+- `getPrompt(promptGet: McpPromptGet, config?: { timeout?: number }): Promise<McpPromptResult>`
 
 ## shared client helpers
 
@@ -46,9 +51,25 @@ These APIs remain available for advanced integrations, but they are no longer re
 
 - `validateMcpToolCall(call): McpProtocolValidationResult`
 - `validateMcpToolResult(result): McpProtocolValidationResult`
+- `validateMcpResourceRead(read): McpProtocolValidationResult`
+- `validateMcpResourceResult(result): McpProtocolValidationResult`
+- `validateMcpPromptGet(get): McpProtocolValidationResult`
+- `validateMcpPromptResult(result): McpProtocolValidationResult`
 - `expectTool(client, toolName): Promise<void>`
+- `expectResource(client, resourceUri, expected?): Promise<void>`
+- `expectPrompt(client, promptName, expected?): Promise<void>`
 - `expectToolCallSuccess(result): void`
 - `expectToolCallError(result, expectedMessage?): void`
 - `expectToolCallError(invocationPromise, expectedMessage?): Promise<void>`
 - `expectToolCallContent(result, expected): void`
 - `expectToolCallMeta(result, expected?): void`
+- `expectResourceReadSuccess(result): void`
+- `expectResourceReadError(result, expectedMessage?): void`
+- `expectResourceReadError(invocationPromise, expectedMessage?): Promise<void>`
+- `expectResourceReadContent(result, expected): void`
+- `expectResourceReadMeta(result, expected?): void`
+- `expectPromptGetSuccess(result): void`
+- `expectPromptGetError(result, expectedMessage?): void`
+- `expectPromptGetError(invocationPromise, expectedMessage?): Promise<void>`
+- `expectPromptGetContent(result, expected): void`
+- `expectPromptGetMeta(result, expected?): void`

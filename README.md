@@ -1,6 +1,6 @@
 # MCProof 🛡️
 
-MCProof: A test framework for MCP servers
+MCProof: A framework for testing MCP servers
 
 ## Install
 
@@ -20,37 +20,83 @@ MCPROOF_HEADERS='{ "Authorization": "Bearer integration-token", "x-api-key":"dem
 
 Write granular test files without any local client setup:
 
-`weather.test.ts`
+`tools.test.ts`
 
 ```ts
-import {expectTool, expectToolCallSuccess, getSharedMcpTestClient} from 'mcproof';
+import { expectTool, expectToolCallContent, expectToolCallSuccess, getSharedMcpTestClient } from 'mcproof';
 
-test('weather tool responds', async () => {
+describe('get_current_time', () => {
   const client = getSharedMcpTestClient();
-  await expectTool(client, 'weather.current');
-  const result = await client.invokeTool({
-    name: 'weather.current',
-    input: { city: 'Montreal' },
+
+  test('tool is present', async () => {
+    await expectTool(client, 'get_current_time');
   });
 
-  expectToolCallSuccess(result);
+  test('responds successfully', async () => {
+    const result = await client.invokeTool({
+      name: 'get_current_time',
+      input: { timezone: 'America/New_York' },
+    });
+
+    expectToolCallSuccess(result);
+    expectToolCallContent(result, expect.objectContaining({
+      timezone: 'America/New_York',
+    }));
+  });
 });
 ```
 
-`time.test.ts`
+`resources.test.ts`
 
 ```ts
-import {expectTool, expectToolCallSuccess, getSharedMcpTestClient} from 'mcproof';
+import {
+  expectResource,
+  expectResourceReadContent,
+  expectResourceReadSuccess,
+  getSharedMcpTestClient,
+} from 'mcproof';
 
-test('time tool responds', async () => {
+describe('time_tool_app resource', () => {
   const client = getSharedMcpTestClient();
-  await expectTool(client, 'time.current');
-  const result = await client.invokeTool({
-    name: 'time.current',
-    input: { timezone: 'UTC' },
+
+  test('is available', async () => {
+    await expectResource(client, 'ui://time-tool/mcp-app.html', {
+      mimeType: 'text/html;profile=mcp-app',
+    });
   });
 
-  expectToolCallSuccess(result);
+  test('returns content', async () => {
+    const result = await client.readResource({ uri: 'ui://time-tool/mcp-app.html' });
+    expectResourceReadSuccess(result);
+    expectResourceReadContent(result, expect.any(Array));
+  });
+});
+```
+
+`prompts.test.ts`
+
+```ts
+import {
+  expectPrompt,
+  expectPromptGetContent,
+  expectPromptGetSuccess,
+  getSharedMcpTestClient,
+} from 'mcproof';
+
+describe('time_expert_prompt', () => {
+  const client = getSharedMcpTestClient();
+
+  test('is available', async () => {
+    await expectPrompt(client, 'time_expert_prompt', {
+      argumentCount: 0,
+    });
+  });
+
+  test('returns messages', async () => {
+    const result = await client.getPrompt({ name: 'time_expert_prompt' });
+    expectPromptGetSuccess(result);
+    expectPromptGetContent(result, expect.any(Array));
+  });
 });
 ```
 
@@ -101,7 +147,16 @@ if (!validation.isValid) {
 const result = await client.invokeTool({ name: 'ping', requestId: '1' });
 expectToolCallSuccess(result);
 
+const resourceResult = await client.readResource({ uri: 'resource://weather/current', requestId: '2' });
+const promptResult = await client.getPrompt({
+  name: 'summarize.weather',
+  arguments: { city: 'Montreal' },
+  requestId: '3',
+});
+
 console.log('result output', result.output);
+console.log('resource output', resourceResult.output);
+console.log('prompt output', promptResult.output);
 ```
 
 ## API
@@ -112,7 +167,12 @@ console.log('result output', result.output);
   - `getAuthHeaders()`
   - `setAuthHeaders(headers)`
   - `clearAuthHeaders()`
+  - `listTools()`
+  - `listResources()`
+  - `listPrompts()`
   - `invokeTool(toolCall)`
+  - `readResource(resourceRead)`
+  - `getPrompt(promptGet)`
 
 - `installSharedMcpTestClient(config)`
 - `configureSharedMcpTestClient(config)`
@@ -123,11 +183,25 @@ console.log('result output', result.output);
 
 - `validateMcpToolCall(call)` - returns `McpProtocolValidationResult`
 - `validateMcpToolResult(result)` - returns `McpProtocolValidationResult`
+- `validateMcpResourceRead(read)` - returns `McpProtocolValidationResult`
+- `validateMcpResourceResult(result)` - returns `McpProtocolValidationResult`
+- `validateMcpPromptGet(get)` - returns `McpProtocolValidationResult`
+- `validateMcpPromptResult(result)` - returns `McpProtocolValidationResult`
 - `expectTool(client, toolName)`
+- `expectResource(client, resourceUri, expected?)`
+- `expectPrompt(client, promptName, expected?)`
 - `expectToolCallSuccess(result)`
 - `expectToolCallError(resultOrInvocation[, expectedMessage])`
 - `expectToolCallContent(result, expected)`
 - `expectToolCallMeta(result, expected?)`
+- `expectResourceReadSuccess(result)`
+- `expectResourceReadError(resultOrInvocation[, expectedMessage])`
+- `expectResourceReadContent(result, expected)`
+- `expectResourceReadMeta(result, expected?)`
+- `expectPromptGetSuccess(result)`
+- `expectPromptGetError(resultOrInvocation[, expectedMessage])`
+- `expectPromptGetContent(result, expected)`
+- `expectPromptGetMeta(result, expected?)`
 
 ## Notes
 

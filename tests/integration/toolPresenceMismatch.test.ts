@@ -41,6 +41,6 @@ test('missing tool fails both discovery and invocation checks', async () => {
     requestId: 'missing-tool-1',
   });
 
-  expect(() => expectToolCallSuccess(result)).toThrow('Expected success status but got error');
+  expect(() => expectToolCallSuccess(result)).toThrow('Expected tool call success status but got error');
   expectToolCallError(result);
 });

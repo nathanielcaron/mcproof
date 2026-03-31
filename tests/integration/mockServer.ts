@@ -116,6 +116,153 @@ export async function startMockMcpServer(): Promise<string> {
         return;
       }
 
+      if (jsonRpcMethod === 'resources/list') {
+        const resources = [
+          {
+            name: 'Weather Resource',
+            uri: 'resource://weather/current',
+            mimeType: 'application/json',
+            description: 'Current weather snapshot',
+          },
+        ];
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(
+          JSON.stringify({
+            jsonrpc: '2.0',
+            id: requestId,
+            result: { resources },
+          }),
+        );
+        return;
+      }
+
+      if (jsonRpcMethod === 'resources/read') {
+        const uri = (payload.params as { uri?: string } | undefined)?.uri;
+
+        if (uri !== 'resource://weather/current') {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(
+            JSON.stringify({
+              jsonrpc: '2.0',
+              id: requestId,
+              error: {
+                code: -32002,
+                message: `Resource not found: ${uri ?? 'unknown'}`,
+              },
+            }),
+          );
+          return;
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(
+          JSON.stringify({
+            jsonrpc: '2.0',
+            id: requestId,
+            result: {
+              contents: [
+                {
+                  uri,
+                  mimeType: 'application/json',
+                  text: JSON.stringify({ city: 'Montreal', forecast: 'sunny' }),
+                },
+              ],
+              _meta: {
+                source: 'mock-server',
+                resource: uri,
+              },
+            },
+          }),
+        );
+        return;
+      }
+
+      if (jsonRpcMethod === 'prompts/list') {
+        const prompts = [
+          {
+            name: 'summarize.weather',
+            description: 'Summarize weather report',
+            arguments: [
+              {
+                name: 'city',
+                required: true,
+              },
+            ],
+          },
+        ];
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(
+          JSON.stringify({
+            jsonrpc: '2.0',
+            id: requestId,
+            result: { prompts },
+          }),
+        );
+        return;
+      }
+
+      if (jsonRpcMethod === 'prompts/get') {
+        const promptParams = payload.params as { name?: string; arguments?: Record<string, string> } | undefined;
+        const promptName = promptParams?.name;
+        const city = promptParams?.arguments?.city;
+
+        if (promptName !== 'summarize.weather') {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(
+            JSON.stringify({
+              jsonrpc: '2.0',
+              id: requestId,
+              error: {
+                code: -32602,
+                message: `Unknown prompt: ${promptName ?? 'unknown'}`,
+              },
+            }),
+          );
+          return;
+        }
+
+        if (!city) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(
+            JSON.stringify({
+              jsonrpc: '2.0',
+              id: requestId,
+              error: {
+                code: -32602,
+                message: 'city argument is required',
+              },
+            }),
+          );
+          return;
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(
+          JSON.stringify({
+            jsonrpc: '2.0',
+            id: requestId,
+            result: {
+              messages: [
+                {
+                  role: 'assistant',
+                  content: {
+                    type: 'text',
+                    text: `Weather summary for ${city}: sunny`,
+                  },
+                },
+              ],
+              _meta: {
+                source: 'mock-server',
+                prompt: promptName,
+              },
+            },
+          }),
+        );
+        return;
+      }
+
       if (requestName === 'weather.current') {
         const weather = { city: requestInput?.city ?? 'unknown', forecast: 'sunny' };
         res.writeHead(200, { 'Content-Type': 'application/json' });
