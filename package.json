@@ -1,6 +1,6 @@
 {
   "name": "mcproof",
-  "version": "0.2.0",
+  "version": "0.3.0-alpha.1",
   "description": "A framework for testing MCP servers",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -1,6 +1,11 @@
 import {createServer, Server} from 'http';
+import {readFileSync} from 'fs';
 import {AddressInfo} from 'net';
+import {join} from 'path';
 import {runCli} from '../src/cli';
+
+const packageJson = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf8')) as {version: string};
+const packageVersion = packageJson.version;
 
 let server: Server;
 let baseUrl: string;
@@ -207,5 +212,5 @@ test.each([['--version'], ['-v']])('runCli prints package version for %s', async
   }
 
   expect(errors).toEqual([]);
-  expect(logs).toEqual(['0.2.0']);
+  expect(logs).toEqual([packageVersion]);
 });
