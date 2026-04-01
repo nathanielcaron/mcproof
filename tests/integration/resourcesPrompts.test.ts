@@ -70,7 +70,7 @@ test('resource read error assertion supports rejected invocation promise', async
         uri: 'resource://weather/missing',
         requestId: 'resource-missing',
       }),
-      'Resource not found',
+      'MCP error -32002: Resource not found: resource://weather/missing',
     ),
   ).resolves.toBeUndefined();
 });
@@ -109,7 +109,7 @@ test('prompt get error assertion supports rejected invocation promise', async ()
         name: 'unknown.prompt',
         requestId: 'prompt-missing',
       }),
-      'Unknown prompt',
+      'MCP error -32602: Unknown prompt: unknown.prompt',
     ),
   ).resolves.toBeUndefined();
 });

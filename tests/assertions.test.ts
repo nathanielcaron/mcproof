@@ -61,13 +61,13 @@ describe('assertions helper behavior', () => {
       error: 'timezone is required',
     };
 
-    expect(() => expectToolCallError(errorResult, 'timezone')).not.toThrow();
+    expect(() => expectToolCallError(errorResult, 'timezone is required')).not.toThrow();
   });
 
   test('expectToolCallError supports rejected tool invocation promises', async () => {
     const invocation = Promise.reject(new Error('MCP error -32602: timezone is required')) as Promise<McpToolResult>;
 
-    await expect(expectToolCallError(invocation, 'timezone')).resolves.toBeUndefined();
+    await expect(expectToolCallError(invocation, 'MCP error -32602: timezone is required')).resolves.toBeUndefined();
   });
 
   test('expectToolCallError rejects when invocation resolves with success', async () => {
@@ -82,7 +82,7 @@ describe('assertions helper behavior', () => {
   test('expectToolCallError rejects when thrown error message does not match expected text', async () => {
     const invocation = Promise.reject(new Error('MCP error -32602: invalid input')) as Promise<McpToolResult>;
 
-    await expect(expectToolCallError(invocation, 'timezone')).rejects.toThrow("Expected invocation failure message to include 'timezone'");
+    await expect(expectToolCallError(invocation, 'MCP error -32602: timezone is required')).rejects.toThrow();
   });
 
   test('expectResource succeeds for an exact resource uri', async () => {
@@ -175,13 +175,13 @@ describe('assertions helper behavior', () => {
   test('expectResourceReadError supports rejected read promises', async () => {
     const invocation = Promise.reject(new Error('resource not found')) as Promise<McpResourceResult>;
 
-    await expect(expectResourceReadError(invocation, 'not found')).resolves.toBeUndefined();
+    await expect(expectResourceReadError(invocation, 'resource not found')).resolves.toBeUndefined();
   });
 
   test('expectPromptGetError supports rejected prompt promises', async () => {
     const invocation = Promise.reject(new Error('prompt not found')) as Promise<McpPromptResult>;
 
-    await expect(expectPromptGetError(invocation, 'not found')).resolves.toBeUndefined();
+    await expect(expectPromptGetError(invocation, 'prompt not found')).resolves.toBeUndefined();
   });
 
   test('expectResourceReadContent and expectPromptGetContent normalize expected payloads', () => {

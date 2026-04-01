@@ -43,6 +43,12 @@ describe('get_current_time', () => {
       timezone: 'America/New_York',
     }));
   });
+
+  test('fails when required input is missing', async () => {
+    await expectToolCallError(
+      client.invokeTool({ name: 'get_current_time', input: {} })
+    );
+  });
 });
 ```
 
@@ -119,6 +125,54 @@ Show the installed package version:
 
 ```bash
 npx mcproof --version
+```
+
+## Testing for Errors
+
+Error assertions support two patterns, but the **promise pattern** is the default and safest option.
+
+**Promise pattern** — pass the promise directly WITHOUT awaiting to catch validation errors:
+
+```ts
+test('fails when required input is missing', async () => {
+  await expectToolCallError(
+    client.invokeTool({ name: 'get_current_time', input: {} })
+  );
+});
+
+test('fails for invalid URI', async () => {
+  await expectResourceReadError(
+    client.readResource({ uri: 'invalid://uri' })
+  );
+});
+
+test('fails for unknown name', async () => {
+  await expectPromptGetError(
+    client.getPrompt({ name: 'unknown_prompt' })
+  );
+});
+```
+
+**Sync result pattern** — only use this when the SDK returns an error result object (does not throw):
+
+```ts
+test('tool call returns error', async () => {
+  const result = await client.invokeTool({ name: 'some_tool', input: { bad: 'input' } });
+  expectToolCallError(result, 'MCP error -32602: validation failed');
+});
+```
+
+**Try/catch pattern** — use this when you intentionally want to assert on a thrown error directly:
+
+```ts
+test('tool throws when required input is missing', async () => {
+  try {
+    await client.invokeTool({ name: 'get_current_time', input: {} });
+    throw new Error('Expected invokeTool to throw');
+  } catch (error) {
+    expect(String(error)).toContain('MCP error -32602');
+  }
+});
 ```
 
 ## Env Configuration

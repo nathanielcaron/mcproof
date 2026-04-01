@@ -59,17 +59,17 @@ These APIs remain available for advanced integrations, but they are no longer re
 - `expectResource(client, resourceUri, expected?): Promise<void>`
 - `expectPrompt(client, promptName, expected?): Promise<void>`
 - `expectToolCallSuccess(result): void`
-- `expectToolCallError(result, expectedMessage?): void`
-- `expectToolCallError(invocationPromise, expectedMessage?): Promise<void>`
+- `expectToolCallError(result, expectedMessage?): void` - sync result pattern: assert error in a non-throwing result object; if provided, `expectedMessage` must match exactly
+- `expectToolCallError(invocationPromise, expectedMessage?): Promise<void>` - promise pattern: catch thrown SDK validation errors and rejected invocations; if provided, `expectedMessage` must match exactly
 - `expectToolCallContent(result, expected): void`
 - `expectToolCallMeta(result, expected?): void`
 - `expectResourceReadSuccess(result): void`
-- `expectResourceReadError(result, expectedMessage?): void`
-- `expectResourceReadError(invocationPromise, expectedMessage?): Promise<void>`
+- `expectResourceReadError(result, expectedMessage?): void` - sync result pattern: assert error in a non-throwing result object; if provided, `expectedMessage` must match exactly
+- `expectResourceReadError(invocationPromise, expectedMessage?): Promise<void>` - promise pattern: catch thrown SDK validation errors and rejected invocations; if provided, `expectedMessage` must match exactly
 - `expectResourceReadContent(result, expected): void`
 - `expectResourceReadMeta(result, expected?): void`
 - `expectPromptGetSuccess(result): void`
-- `expectPromptGetError(result, expectedMessage?): void`
-- `expectPromptGetError(invocationPromise, expectedMessage?): Promise<void>`
+- `expectPromptGetError(result, expectedMessage?): void` - sync result pattern: assert error in a non-throwing result object; if provided, `expectedMessage` must match exactly
+- `expectPromptGetError(invocationPromise, expectedMessage?): Promise<void>` - promise pattern: catch thrown SDK validation errors and rejected invocations; if provided, `expectedMessage` must match exactly
 - `expectPromptGetContent(result, expected): void`
 - `expectPromptGetMeta(result, expected?): void`

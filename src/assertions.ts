@@ -43,6 +43,22 @@ export function expectToolCallSuccess(result: McpToolResult): void {
   assertSuccess(result.status, result.error, 'tool call');
 }
 
+/**
+ * Assert that a tool call failed.
+ *
+ * Two patterns are supported:
+ *
+ * 1. **Promise pattern** (to catch SDK validation errors):
+ *    Pass the promise directly WITHOUT awaiting to catch errors thrown during input validation.
+ *    Example: `await expectToolCallError(client.invokeTool({ name: 'tool', input: {} }))`
+ *
+ * 2. **Sync result pattern** (only for non-throwing error responses):
+ *    Await the invocation first, then assert the error result object.
+ *    If invocation throws, use the promise pattern above or a try/catch in your test.
+ *    Example: `const result = await client.invokeTool(...); expectToolCallError(result, 'expected error')`
+ *
+ * When `expectedMessage` is provided, it must match the full error message exactly.
+ */
 export function expectToolCallError(result: McpToolResult, expectedMessage?: string): void;
 export function expectToolCallError(result: Promise<McpToolResult>, expectedMessage?: string): Promise<void>;
 export function expectToolCallError(result: McpToolResult | Promise<McpToolResult>, expectedMessage?: string): void | Promise<void> {
@@ -57,9 +73,7 @@ export function expectToolCallError(result: McpToolResult | Promise<McpToolResul
         }
 
         const message = formatUnknownErrorMessage(error);
-        if (!message.includes(expectedMessage)) {
-          throw new Error(`Expected invocation failure message to include '${expectedMessage}', got '${message}'`);
-        }
+        assertThrownMessageEquals(message, expectedMessage);
       },
     );
   }
@@ -118,6 +132,22 @@ export function expectResourceReadSuccess(result: McpResourceResult): void {
   assertSuccess(result.status, result.error, 'resource read');
 }
 
+/**
+ * Assert that a resource read failed.
+ *
+ * Two patterns are supported:
+ *
+ * 1. **Promise pattern** (to catch SDK validation errors):
+ *    Pass the promise directly WITHOUT awaiting to catch errors thrown during request validation.
+ *    Example: `await expectResourceReadError(client.readResource({ uri: 'resource://missing' }))`
+ *
+ * 2. **Sync result pattern** (only for non-throwing error responses):
+ *    Await the read first, then assert the error result object.
+ *    If invocation throws, use the promise pattern above or a try/catch in your test.
+ *    Example: `const result = await client.readResource(...); expectResourceReadError(result, 'expected error')`
+ *
+ * When `expectedMessage` is provided, it must match the full error message exactly.
+ */
 export function expectResourceReadError(result: McpResourceResult, expectedMessage?: string): void;
 export function expectResourceReadError(result: Promise<McpResourceResult>, expectedMessage?: string): Promise<void>;
 export function expectResourceReadError(
@@ -135,9 +165,7 @@ export function expectResourceReadError(
         }
 
         const message = formatUnknownErrorMessage(error);
-        if (!message.includes(expectedMessage)) {
-          throw new Error(`Expected invocation failure message to include '${expectedMessage}', got '${message}'`);
-        }
+        assertThrownMessageEquals(message, expectedMessage);
       },
     );
   }
@@ -196,6 +224,22 @@ export function expectPromptGetSuccess(result: McpPromptResult): void {
   assertSuccess(result.status, result.error, 'prompt get');
 }
 
+/**
+ * Assert that a prompt get failed.
+ *
+ * Two patterns are supported:
+ *
+ * 1. **Promise pattern** (to catch SDK validation errors):
+ *    Pass the promise directly WITHOUT awaiting to catch errors thrown during request validation.
+ *    Example: `await expectPromptGetError(client.getPrompt({ name: 'unknown' }))`
+ *
+ * 2. **Sync result pattern** (only for non-throwing error responses):
+ *    Await the get first, then assert the error result object.
+ *    If invocation throws, use the promise pattern above or a try/catch in your test.
+ *    Example: `const result = await client.getPrompt(...); expectPromptGetError(result, 'expected error')`
+ *
+ * When `expectedMessage` is provided, it must match the full error message exactly.
+ */
 export function expectPromptGetError(result: McpPromptResult, expectedMessage?: string): void;
 export function expectPromptGetError(result: Promise<McpPromptResult>, expectedMessage?: string): Promise<void>;
 export function expectPromptGetError(
@@ -213,9 +257,7 @@ export function expectPromptGetError(
         }
 
         const message = formatUnknownErrorMessage(error);
-        if (!message.includes(expectedMessage)) {
-          throw new Error(`Expected invocation failure message to include '${expectedMessage}', got '${message}'`);
-        }
+        assertThrownMessageEquals(message, expectedMessage);
       },
     );
   }
@@ -406,13 +448,17 @@ function formatUnknownErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+function assertThrownMessageEquals(actualMessage: string, expectedMessage: string): void {
+  expect(actualMessage).toBe(expectedMessage);
+}
+
 function assertErrored(status: 'success' | 'error', error: string | undefined, label: string, expectedMessage?: string): void {
   if (status !== 'error') {
     throw new Error(`Expected ${label} to fail with error status`);
   }
 
-  if (expectedMessage && !error?.includes(expectedMessage)) {
-    throw new Error(`Expected error message to include '${expectedMessage}', got '${error}'`);
+  if (expectedMessage !== undefined) {
+    expect(error).toBe(expectedMessage);
   }
 }
 
