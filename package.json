@@ -9,14 +9,15 @@
   },
   "files": [
     "dist",
-    "bin"
+    "bin",
+    "resources"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "npm run build && MCPROOF_SKIP_PREFLIGHT=1 node ./bin/mcproof.js test",
     "lint": "eslint . --ext .ts",
     "prepare": "npm run build",
-    "prepublishOnly": "npm test && npm run lint"
+    "release": "changeset publish"
   },
   "keywords": [
     "mcp",
@@ -27,6 +28,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@changesets/cli": "^2.30.0",
     "@types/node": "^20.14.2",
     "@typescript-eslint/eslint-plugin": "^8.57.2",
     "@typescript-eslint/parser": "^8.57.2",
