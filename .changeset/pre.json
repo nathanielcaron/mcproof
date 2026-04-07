@@ -4,5 +4,7 @@
   "initialVersions": {
     "mcproof": "0.3.0-alpha.1"
   },
-  "changesets": []
+  "changesets": [
+    "silly-dogs-visit"
+  ]
 }
