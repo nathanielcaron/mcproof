@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MCProof Report</title>
+  <style>
+    :root {
+      --surface: #ffffff;
+      --surface-subtle: #f8fafc;
+      --border: #d7dee7;
+      --text: #1f2937;
+      --muted: #4b5563;
+      --success-bg: #dcfce7;
+      --success-border: #86efac;
+      --success-text: #166534;
+      --failure-bg: #fee2e2;
+      --failure-border: #fca5a5;
+      --failure-text: #991b1b;
+      --neutral-bg: #eef2f7;
+      --neutral-border: #cbd5e1;
+    }
+    body { font-family: Helvetica, Arial, sans-serif; margin: 24px; color: var(--text); background: linear-gradient(180deg, #f8fafc 0%, #eef4ff 100%); }
+    h1, h2, h3 { color: #111827; }
+    section, article { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04); }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { border: 1px solid var(--border); text-align: left; vertical-align: top; padding: 8px; }
+    th { background: #e8eef7; }
+    dl.summary-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 0; }
+    .summary-card { background: var(--surface-subtle); border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px; }
+    .summary-success { background: var(--success-bg); border-color: var(--success-border); }
+    .summary-failure { background: var(--failure-bg); border-color: var(--failure-border); }
+    .summary-neutral { background: var(--neutral-bg); border-color: var(--neutral-border); }
+    dt { font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--muted); }
+    dd { margin: 6px 0 0; font-size: 14px; }
+    pre { white-space: pre-wrap; margin: 0; font-family: Menlo, Monaco, monospace; }
+    .status-badge { display: inline-block; padding: 4px 10px; border: 1px solid transparent; border-radius: 999px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+    .status-success { color: var(--success-text); background: var(--success-bg); border-color: var(--success-border); }
+    .status-failure { color: var(--failure-text); background: var(--failure-bg); border-color: var(--failure-border); }
+    .status-neutral { color: #334155; background: var(--neutral-bg); border-color: var(--neutral-border); }
+    .suite-success { border-color: var(--success-border); }
+    .suite-failure { border-color: var(--failure-border); }
+    .status-row-success td { background: #f0fdf4; }
+    .status-row-failure td { background: #fef2f2; }
+  </style>
+</head>
+<body>
+  <section>
+    <h1>MCProof Report 🛡️</h1>
+    <dl class="summary-list"><div class="summary-card summary-success"><dt>Overall status</dt><dd><span class="status-badge status-success">success</span></dd></div><div class="summary-card"><dt>Generated at</dt><dd>4/7/2026, 11:33:45 PM</dd></div><div class="summary-card"><dt>Package version</dt><dd>0.3.0-alpha.1</dd></div><div class="summary-card"><dt>Working directory</dt><dd>/home/runner/work/mcproof/mcproof</dd></div><div class="summary-card"><dt>Command</dt><dd>mcproof test --help</dd></div></dl>
+  </section>
+  <section><h2>Server Information</h2><dl class="summary-list"><div class="summary-card summary-success"><dt>Status</dt><dd><span class="status-badge status-success">success</span></dd></div><div class="summary-card"><dt>Endpoint</dt><dd>http://127.0.0.1:37703</dd></div><div class="summary-card"><dt>Server name</dt><dd>preflight-server</dd></div><div class="summary-card"><dt>Server version</dt><dd>1.0.0</dd></div><div class="summary-card summary-neutral"><dt>Error</dt><dd>none</dd></div></dl><h3>Tools</h3><table><thead><tr><th>Name</th><th>Title</th><th>Description</th></tr></thead><tbody><tr><td>timeTool</td><td></td><td></td></tr><tr><td>weatherTool</td><td></td><td></td></tr></tbody></table><h3>Resources</h3><table><thead><tr><th>Name</th><th>URI</th><th>MIME Type</th><th>Description</th></tr></thead><tbody><tr><td>forecast-city</td><td>resource://weather/forecast/{city}</td><td>application/json</td><td>Weather forecast by city</td></tr></tbody></table><h3>Prompts</h3><table><thead><tr><th>Name</th><th>Args</th><th>Description</th></tr></thead><tbody><tr><td>weather-summary</td><td>1</td><td>Summarize weather conditions for a city.</td></tr></tbody></table></section>
+  <section><h2>Test Summary</h2><dl class="summary-list"><div class="summary-card summary-neutral"><dt>Status</dt><dd><span class="status-badge status-neutral">not-run</span></dd></div><div class="summary-card summary-neutral"><dt>Success</dt><dd>n/a</dd></div><div class="summary-card"><dt>Duration</dt><dd>n/a</dd></div><div class="summary-card"><dt>Total suites</dt><dd>n/a</dd></div><div class="summary-card"><dt>Total tests</dt><dd>n/a</dd></div><div class="summary-card summary-neutral"><dt>Passed suites</dt><dd>n/a</dd></div><div class="summary-card summary-neutral"><dt>Passed tests</dt><dd>n/a</dd></div><div class="summary-card summary-neutral"><dt>Failed suites</dt><dd>n/a</dd></div><div class="summary-card summary-neutral"><dt>Failed tests</dt><dd>n/a</dd></div><div class="summary-card"><dt>Pending tests</dt><dd>n/a</dd></div><div class="summary-card"><dt>Todo tests</dt><dd>n/a</dd></div><div class="summary-card summary-failure"><dt>Error</dt><dd>Jest exited without producing structured test results.</dd></div></dl></section>
+  <section><h2>Detailed Test Results</h2><p>Tests were not executed to completion.</p></section>
+</body>
+</html>
