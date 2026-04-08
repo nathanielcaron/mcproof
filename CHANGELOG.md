@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0-alpha.3
+
+### Patch Changes
+
+- 4ec8862: Updated release workflow to properly publish to npm
+- ff107b9: Updated release workflow step to use corepack
+
 ## 0.3.0-alpha.2
 
 ### Patch Changes
