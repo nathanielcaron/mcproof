@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0-alpha.4
+
+### Patch Changes
+
+- 72184eb: Added repository to package.json
+
 ## 0.3.0-alpha.3
 
 ### Patch Changes
