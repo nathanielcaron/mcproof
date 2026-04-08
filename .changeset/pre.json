@@ -5,6 +5,8 @@
     "mcproof": "0.3.0-alpha.1"
   },
   "changesets": [
-    "silly-dogs-visit"
+    "silly-dogs-visit",
+    "strong-cats-battle",
+    "sweet-rules-camp"
   ]
 }
