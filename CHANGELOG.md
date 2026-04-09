@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0-alpha.5
+
+### Patch Changes
+
+- 7b80f50: Updated repository url in package.json
+
 ## 0.3.0-alpha.4
 
 ### Patch Changes
